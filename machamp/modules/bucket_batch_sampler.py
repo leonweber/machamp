@@ -226,8 +226,8 @@ class BucketBatchSampler(BatchSampler):
             window_size = 4 * 8 # num GPUs * num gradient accumulation
             mixing_values = []
             for i in range(len(this_epoch_dataset_indexes) // window_size):
-                mixing_values.append(len(np.unique(this_epoch_dataset_indexes[i * window_size: (i+1) * window_size])) / window_size)
-            print(f"Avg. mixing value: {np.mean(mixing_values)}")
+                mixing_values.append(len(np.unique(this_epoch_dataset_indexes[i * window_size: (i+1) * window_size])))
+            logger.info(f"Avg. mixing value: {np.mean(mixing_values)}")
 
             for batch in this_epoch_all_batches:
                 if len(batch) > 0:

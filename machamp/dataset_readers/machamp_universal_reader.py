@@ -8,6 +8,7 @@ from allennlp.data.instance import Instance
 from allennlp.data.token_indexers import TokenIndexer, SingleIdTokenIndexer
 from allennlp.data.tokenizers import Token, Tokenizer, WhitespaceTokenizer
 from transformers.models.bert.tokenization_bert import BasicTokenizer
+from tqdm import tqdm
 
 from machamp.dataset_readers.lemma_edit import gen_lemma_rule
 from machamp.dataset_readers.reader_utils import seqs2data, lines2data, mlm_mask

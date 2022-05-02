@@ -165,7 +165,7 @@ class MachampMultiTagger(Model):
             else:
                 tag_mask = mask
             output_dict["loss"] = self.multi_class_cross_entropy_loss(logits, gold_labels, tag_mask) * self.loss_weight
-            output_dict['loss'] /= torch.log(logits.shape[-1])
+            output_dict['loss'] /= torch.log(torch.tensor(logits.shape[-1]))
             for metric in self.metrics.values():
                 metric(class_probabilities, gold_labels, mask)
         return output_dict

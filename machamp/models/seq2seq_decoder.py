@@ -355,7 +355,7 @@ class MachampSeq2SeqDecoder(Model):
             target_mask = util.get_text_field_mask(target_tokens)
             loss = self._get_loss(logits, targets, target_mask) * self.loss_weight
             output_dict["loss"] = loss
-            output_dict['loss'] /= torch.log(logits.shape[-1])
+            output_dict['loss'] /= torch.log(torch.tensor(logits.shape[-1]))
 
         return output_dict
 

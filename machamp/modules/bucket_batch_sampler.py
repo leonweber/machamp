@@ -5,7 +5,7 @@ import random
 from typing import List, Iterable, Tuple, Iterator, TypeVar
 from itertools import islice, zip_longest
 
-
+import numpy as np
 from allennlp.common.checks import ConfigurationError
 #from allennlp.common.util import lazy_groups_of
 from allennlp.data.instance import Instance
@@ -204,6 +204,7 @@ class BucketBatchSampler(BatchSampler):
 
             # collect all batches
             this_epoch_all_batches = []
+
             for dataset_idx in range(len(all_batches)):
                 new_size = new_sizes[dataset_idx]
                 #random.shuffle(all_batches[dataset_idx])
@@ -212,7 +213,22 @@ class BucketBatchSampler(BatchSampler):
                 this_epoch_all_batches += all_batches[dataset_idx][:new_size]
 
             # shuffle all batches
-            random.shuffle(this_epoch_all_batches)
+            this_epoch_dataset_indexes = []
+            for i, size in enumerate(new_sizes):
+                this_epoch_dataset_indexes.extend([i] * size)
+            this_epoch_dataset_indexes = np.array(this_epoch_dataset_indexes)
+            this_epoch_all_batches = np.array(this_epoch_all_batches, dtype=object)
+            indices = np.arange(len(this_epoch_all_batches))
+            np.random.shuffle(indices)
+            this_epoch_all_batches = this_epoch_all_batches[indices]
+            this_epoch_dataset_indexes = this_epoch_dataset_indexes[indices]
+
+            window_size = 4 * 8 # num GPUs * num gradient accumulation
+            mixing_values = []
+            for i in range(len(this_epoch_dataset_indexes) // window_size):
+                mixing_values.append(len(np.unique(this_epoch_dataset_indexes[i * window_size: (i+1) * window_size])) / window_size)
+            print(f"Avg. mixing value: {np.mean(mixing_values)}")
+
             for batch in this_epoch_all_batches:
                 if len(batch) > 0:
                     yield batch

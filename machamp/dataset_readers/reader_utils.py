@@ -1,6 +1,7 @@
 import random
 
 from allennlp.data.tokenizers import Token
+from tqdm import tqdm
 
 
 def seqs2data(conllu_file, do_lowercase):
@@ -47,7 +48,8 @@ def lines2data(input_file, do_lowercase):
     Simply reads a tab-separated text file. Returns each line split
     by a '\t' character.
     """
-    for line in open(input_file, mode='r', encoding='utf-8'):
+    lines = open(input_file, mode='r', encoding='utf-8').readlines()
+    for line in tqdm(lines):
         if len(line.strip()) < 2:
             continue
         if do_lowercase:

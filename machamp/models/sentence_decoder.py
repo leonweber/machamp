@@ -101,7 +101,7 @@ class MachampClassifier(Model):
 
         if gold_labels != None:
             output_dict['loss'] = self._loss(logits, gold_labels.long().view(-1)) * self.loss_weight
-            output_dict['loss'] /= torch.log(logits.shape[-1])
+            output_dict['loss'] /= torch.log(torch.tensor(logits.shape[-1]))
             for metric in self.metrics.values():
                 metric(logits, gold_labels)
 

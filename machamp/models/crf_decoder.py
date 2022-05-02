@@ -195,6 +195,7 @@ class MachampCrfTagger(Model):
             log_likelihood = self.crf(logits, gold_labels, crf_mask)
 
             output["loss"] = -log_likelihood * self.loss_weight
+            output['loss'] /= torch.log(logits.shape[-1])
 
             # Represent viterbi tags as "class probabilities" that we can
             # feed into the metrics

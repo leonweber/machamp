@@ -116,6 +116,7 @@ class MachampMaskedLanguageModel(Model):
         output_dict = {"logits": logits, "class_probabilities": probs}
 
         output_dict["loss"] = self.loss_weight * masked_lm_loss
+        output_dict['loss'] /= torch.log(logits.shape[-1])
 
         for metric in self.metrics.values():
             metric(masked_lm_loss)

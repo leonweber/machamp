@@ -2,6 +2,8 @@ import copy
 import logging
 from typing import Dict, Iterable, List, Optional
 
+import torch
+from allennlp.common import util
 from allennlp.data import DatasetReader
 from allennlp.data.fields import Field, LabelField, TextField, SequenceLabelField, MetadataField
 from allennlp.data.instance import Instance
@@ -66,6 +68,13 @@ class MachampUniversalReader(DatasetReader):
         self._source_max_exceeded = 0
         self._target_max_exceeded = 0
 
+        if util.is_distributed():
+            self._rank = torch.distributed.get_rank()
+            self._world_size = torch.distributed.get_world_size()
+        else:
+            self._rank = 0
+            self._world_size = 1
+
     def _read(self, file_path: str) -> Iterable[Instance]:
         """
         Main reading class, for each dataset it identifies the type of dataset to read,
@@ -77,7 +86,10 @@ class MachampUniversalReader(DatasetReader):
         is_train = file_path == 'TRAINPLACEHOLDER'
         is_dev = file_path == 'DEVPLACEHOLDER'
         is_test = file_path == 'TESTPLACEHOLDER'
-        for dataset in self.datasets:
+        for i, dataset in enumerate(self.datasets):
+            if i % self._world_size != self._rank:
+                continue
+
             if is_train:
                 file_path = self.datasets[dataset]['train_data_path']
             if is_dev:

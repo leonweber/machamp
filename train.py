@@ -27,6 +27,7 @@ if __name__ == "__main__":
     parser.add_argument("--resume", default='', type=str, help="Finalize training on a model for which training abrubptly stopped. Give the path to the log directory of the model.")
     parser.add_argument("--finetune", type=str, default='', help="Retrain on an previously train MaChAmp AllenNLP model. Specify the path to model.tar.gz and add a dataset_config that specifies the new training.")
     parser.add_argument("--seed", type=int, default=-1, help="seed to use for training") #TODO
+    parser.add_argument("--node_rank", type=int, default=-0)
 
     args = parser.parse_args()
 
@@ -38,7 +39,7 @@ if __name__ == "__main__":
         args.dataset_configs.append(args.dataset_config)
 
 
-    def train(name, resume, dataset_configs, device, parameters_config, finetune):
+    def train(name, resume, dataset_configs, device, parameters_config, finetune, node_rank=0):
         if resume:
             train_params = Params.from_file(resume + '/config.json')
         else:
@@ -53,7 +54,7 @@ if __name__ == "__main__":
         if resume:
             name = resume
 
-        model, serialization_dir = util.train(train_params, name, resume, finetune)
+        model, serialization_dir = util.train(train_params, name, resume, finetune, node_rank=node_rank)
 
         # now loads again for every dataset, = suboptimal
         # alternative would be to load the model once, but then the datasetReader has
@@ -76,7 +77,7 @@ if __name__ == "__main__":
             util.predict_model_with_archive("machamp_predictor", dataset_params,
                                             serialization_dir + '/model.tar.gz', dev_file, dev_pred)
 
-        util.clean_th_files(serialization_dir)
+        # util.clean_th_files(serialization_dir)
         return serialization_dir
 
     name = args.name
@@ -85,9 +86,9 @@ if __name__ == "__main__":
         name = '.'.join(names)
 
     if args.sequential:
-        oldDir = train(name + '.0', args.resume, args.dataset_configs[0], args.device, args.parameters_config, args.finetune)
+        oldDir = train(name + '.0', args.resume, args.dataset_configs[0], args.device, args.parameters_config, args.finetune, node_rank=args.node_rank)
         for datasetIdx, dataset in enumerate(args.dataset_configs[1:]):
             oldDir = train(name + '.' + str(datasetIdx+1), False, dataset, args.device, args.parameters_config, oldDir)
     else:
-        train(name, args.resume, args.dataset_configs, args.device, args.parameters_config, args.finetune)
+        train(name, args.resume, args.dataset_configs, args.device, args.parameters_config, args.finetune, node_rank=args.node_rank)
 

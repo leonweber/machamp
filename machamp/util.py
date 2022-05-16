@@ -113,7 +113,7 @@ def walk_and_replace_dict(data, orig, new):
             data[item] = new
     return data
 
-def train(config, name, resume, finetune):
+def train(config, name, resume, finetune, node_rank=0):
     now = datetime.now()
     serialization_dir = 'logs/' + name + '/' + now.strftime("%Y.%m.%d_%H.%M.%S") + '/'
     if resume:
@@ -147,7 +147,8 @@ def train(config, name, resume, finetune):
                         serialization_dir,
                         file_friendly_logging=True,
                         force=(not resume), 
-                        recover=resume)
+                        recover=resume,
+                        node_rank=node_rank)
     if os.path.isfile(serialization_dir + 'vocabulary/.lock'):
         os.remove(serialization_dir + 'vocabulary/.lock')
     return model, serialization_dir

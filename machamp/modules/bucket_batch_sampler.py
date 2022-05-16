@@ -223,7 +223,7 @@ class BucketBatchSampler(BatchSampler):
             this_epoch_all_batches = this_epoch_all_batches[indices]
             this_epoch_dataset_indexes = this_epoch_dataset_indexes[indices]
 
-            window_size = 4 * 8 # num GPUs * num gradient accumulation
+            window_size = 8 # num gradient accumulation
             mixing_values = []
             for i in range(len(this_epoch_dataset_indexes) // window_size):
                 mixing_values.append(len(np.unique(this_epoch_dataset_indexes[i * window_size: (i+1) * window_size])))

@@ -87,9 +87,6 @@ class MachampUniversalReader(DatasetReader):
         is_dev = file_path == 'DEVPLACEHOLDER'
         is_test = file_path == 'TESTPLACEHOLDER'
         for i, dataset in enumerate(self.datasets):
-            if i % self._world_size != self._rank:
-                continue
-
             if is_train:
                 file_path = self.datasets[dataset]['train_data_path']
             if is_dev:
@@ -149,8 +146,9 @@ class MachampUniversalReader(DatasetReader):
             else:
                 read_function = self.read_sequence
 
-            for item in read_function(dataset, file_path, is_train, max_sents):
-                yield item
+            for i, item in enumerate(read_function(dataset, file_path, is_train, max_sents)):
+                if (i % self._world_size) == self._rank:
+                    yield item
 
     def read_raw(self, dataset, path, is_train, max_sents):
         """

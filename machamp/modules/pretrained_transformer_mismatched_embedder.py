@@ -103,12 +103,6 @@ class MachampPretrainedTransformerMismatchedEmbedder(TokenEmbedder):
         span_mask = span_mask.unsqueeze(-1)
         span_embeddings *= span_mask  # zero out paddings
 
-        span_embeddings_sum = span_embeddings.sum(2)
-        span_embeddings_len = span_mask.sum(2)
-        # Shape: (batch_size, num_orig_tokens, embedding_size)
-        orig_embeddings = span_embeddings_sum / torch.clamp_min(span_embeddings_len, 1)
-
-        # All the places where the span length is zero, write in zeros.
-        orig_embeddings[(span_embeddings_len == 0).expand(orig_embeddings.shape)] = 0
+        orig_embeddings = span_embeddings[:, :, 0, :]
 
         return orig_embeddings
